@@ -1,19 +1,19 @@
 module Mongoid::TaggableWithContext::AggregationStrategy
   module RealTime
     extend ActiveSupport::Concern
-    
+
     included do
       set_callback :create,   :after, :increment_tags_agregation
       set_callback :save,     :after, :update_tags_aggregation
       set_callback :destroy,  :after, :decrement_tags_aggregation
     end
-    
+
     module ClassMethods
       # Collection name for storing results of tag count aggregation
       def aggregation_collection_for(context)
         "#{collection_name}_#{context}_aggregation"
       end
-      
+
       def tags_for(context, conditions={})
         conditions = {:sort => '_id'}.merge(conditions)
         db.collection(aggregation_collection_for(context)).find({:value => {"$gt" => 0 }}, conditions).to_a.map{ |t| t["_id"] }
@@ -26,7 +26,7 @@ module Mongoid::TaggableWithContext::AggregationStrategy
         db.collection(aggregation_collection_for(context)).find({:value => {"$gt" => 0 }}, conditions).to_a.map{ |t| [t["_id"], t["value"]] }
       end
     end
-    
+
     private
     def need_update_tags_aggregation?
       !changed_contexts.empty?
@@ -35,7 +35,7 @@ module Mongoid::TaggableWithContext::AggregationStrategy
     def changed_contexts
       tag_contexts & changes.keys.map(&:to_sym)
     end
-    
+
     def increment_tags_agregation
       # if document is created by using MyDocument.new
       # and attributes are individually assigned
@@ -71,7 +71,7 @@ module Mongoid::TaggableWithContext::AggregationStrategy
 
       changed_contexts.each do |context|
         coll = self.class.db.collection(self.class.aggregation_collection_for(context))
-        field_name = self.class.tag_options_for(context)[:array_field]        
+        field_name = self.class.tag_options_for(context)[:array_field]
         old_tags, new_tags = changes["#{field_name}"]
         old_tags ||= []
         new_tags ||= []
