@@ -163,7 +163,7 @@ module Mongoid::TaggableWithContext
     end
 
     def convert_string_to_slugs(str = "", seperator = " ")
-      str.split(seperator).map(&:url_encode).uniq.compact
+      str.split(seperator).map(&:to_url).uniq.compact
     end
 
     def filter_tags(str = "")
